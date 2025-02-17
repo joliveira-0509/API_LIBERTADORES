@@ -3,15 +3,27 @@ import express from 'express';
 import { retornaCampeonatos, retornaCampeonatosAno, retornaCampeonatosID, retornaCampeonatosTime } from './servicos/retornaCapeonatos_servico.js';
 /* import pool from './servicos/conexao.js'; */
 import { cadastraCampeonato } from "./servicos/cadastroCampeonato_servico.js";
-import { atualizaCampeonato , atualizaParcela } from './servicos/atualizaCampeonato_servico.js';
+import { atualizaCampeonato, atualizaParcela } from './servicos/atualizaCampeonato_servico.js';
+import { deletaCampeonato } from "./servicos/deletaCAmpeonatos_servicos.js";
 
 const app = express();
 /* app.use(cors()); */
 app.use(express.json());
 
-app.patch('/campeonatos/:id', async (req,res) => {
+app.delete('/campeonatos/:id', async (req, res) => {
     const {id} = req.params;
-    const {campeao, vice, ano} = req.body;
+    const resultado = await deletaCampeonato(id);
+
+    if (resultado.affectedRows > 0) {
+        res.status(202).send('Registro deetado com sucesso!')
+    } else {
+        res.status(404).send('Registro não encontrado, informe o id correto');
+    }
+})
+
+app.patch('/campeonatos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { campeao, vice, ano } = req.body;
 
     const camposAtualizar = {};
     if (campeao) camposAtualizar.campeao = campeao;
@@ -21,20 +33,20 @@ app.patch('/campeonatos/:id', async (req,res) => {
     if (Object.keys(camposAtualizar).length === 0) {
         res.status(400).send("Nenhum campo válido foi enviado para a atualização")
     } else {
-        const resultado = await atualizaParcela(id,camposAtualizar)
-        if (resultado.affectedRows > 0 ) {
+        const resultado = await atualizaParcela(id, camposAtualizar)
+        if (resultado.affectedRows > 0) {
             res.status(202).send('REgistro atualizado com sucess')
         } else {
             res.status(404).send('Registro não encontrado')
         }
-        
+
     }
 })
 
 
 app.put('/campeonatos/:id', async (req, res) => {
     const { id } = req.params;
-    const {campeao, vice, ano} = req.body;
+    const { campeao, vice, ano } = req.body;
 
     if (campeao == undefined || vice == undefined || ano == undefined /* undefined in (campeao, vice, ano) */) {
         res.status(400).send('Nem todos os campos foram preenchidos')
@@ -104,3 +116,4 @@ app.listen(9000, async () => {
 
 
 /* NPM INSTALL CORS (portas globais )*/
+/* esteriniografia */
